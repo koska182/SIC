@@ -1,6 +1,4 @@
-
 /*
-
  16x2 LCD display.  The LiquidCrystal library works with all LCD displays that are compatible with the 
  Hitachi HD44780 driver.
  
@@ -8,7 +6,6 @@
  Encoder hooked up with common to GROUND,
  encoder0PinA to pin 2, encoder0PinB to pin 4
  it doesn't matter which encoder pin you use for A or B  
-
   uses Arduino pullups on A & B channel outputs
   turning on the pullups saves having to hook up resistors 
   to the A & B channel outputs 
@@ -16,10 +13,10 @@
   The circuit:
  * LCD RS pin to digital pin 12
  * LCD Enable pin to digital pin 11
- * LCD D4 pin to digital pin 5
- * LCD D5 pin to digital pin 4 // zamijeniti
- * LCD D6 pin to digital pin 3
- * LCD D7 pin to digital pin 2 // zamijeniti
+ * LCD D4 pin to digital pin 10
+ * LCD D5 pin to digital pin 9
+ * LCD D6 pin to digital pin 8
+ * LCD D7 pin to digital pin 7
  * LCD R/W pin to ground
  * 10K resistor:
  * ends to +5V and ground
@@ -32,8 +29,8 @@
 #include <PID_v1.h>
 #define encoder0PinA  2
 #define encoder0PinB  4
-#define ptcPin 3 //Ptc input from heater
-#define heater 2 //PWM output to heater
+#define ptcPin A0 //Ptc input from heater
+#define heater 6 //PWM output to heater
 #define button 5 //button for standby
 boolean heaterState = false;
 volatile unsigned int encoder0Pos = 320;
@@ -43,10 +40,10 @@ int pwmrate;
 
 //Define Variables we'll be connecting to
 double Setpoint, Input, Output;
-PID myPID(&Input, &Output, &Setpoint,2,5,1, DIRECT);
+PID myPID(&Input, &Output, &Setpoint,1,0,0, DIRECT);
 
 // initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
 void setup() {
   pinMode(ptcPin, INPUT);
@@ -67,11 +64,11 @@ void setup() {
   lcd.home();
   lcd.print("Set Temp: "); //10 znakova
   lcd.print(encoder0Pos); // 3 znaka
-  lcd.print(" °C"); // 3 znaka
+  lcd.print(" C"); // 3 znaka
   lcd.setCursor(0, 1);
   lcd.print("Temp: "); //6 znakova
   lcd.print(temperature); // 3 znaka
-  lcd.print(" °C"); // 3 znaka
+  lcd.print(" C"); // 3 znaka
   myPID.SetMode(AUTOMATIC); 
 }
 
@@ -82,13 +79,13 @@ void loop() {
       heaterState = !heaterState;}
   }
   
-  // set the cursor to column 6, line 0
+  // set the cursor to column 10, line 0
   // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(6, 0);
+  lcd.setCursor(10, 0);
   // print the encoder position:
   lcd.print(encoder0Pos);
   temperature = analogRead(ptcPin); // dorada
-  lcd.setCursor(4, 1);
+  lcd.setCursor(6, 1);
   lcd.print(temperature);
   
   Setpoint = encoder0Pos;
@@ -100,6 +97,7 @@ void loop() {
    else {
     analogWrite(heater, pwmrate);
    }
+   delay (100);
 }
 
 
@@ -111,7 +109,6 @@ void loop() {
    Encoder hooked up with common to GROUND,
    encoder0PinA to pin 2, encoder0PinB to pin 4 (or pin 3 see below)
    it doesn't matter which encoder pin you use for A or B  
-
    uses Arduino pullups on A & B channel outputs
    turning on the pullups saves having to hook up resistors 
    to the A & B channel outputs 
@@ -124,15 +121,15 @@ void doEncoder() {
    * For more information on speeding up this process, see
    * [Reference/PortManipulation], specifically the PIND register.
    */
+   noInterrupts();
   if (digitalRead(encoder0PinA) == digitalRead(encoder0PinB)) {
     
-    if (encoder0Pos < 450){
-    encoder0Pos++;}
+    //if (encoder0Pos < 450){
+    encoder0Pos++;//}
   } else {
-    if (encoder0Pos > 200){
-    encoder0Pos--;}
+    //if (encoder0Pos > 200){
+    encoder0Pos--;//}
   }
+  interrupts();
 }
-
-
 
