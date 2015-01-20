@@ -44,6 +44,16 @@ PID myPID(&Input, &Output, &Setpoint,1,0,0, DIRECT);
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
+byte stupanj[8] = {
+ B00000,
+ B00110,
+ B01001,
+ B01001,
+ B00110,
+ B00000,
+ B00000,
+ B00000
+};
 
 void setup() {
   pinMode(ptcPin, INPUT);
@@ -57,6 +67,7 @@ void setup() {
   
   // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
+  lcd.createChar(0, stupanj);
   // Print a message to the LCD.
   lcd.print("hello, world!");
   delay (1000);
@@ -64,11 +75,15 @@ void setup() {
   lcd.home();
   lcd.print("Set Temp: "); //10 znakova
   lcd.print(encoder0Pos); // 3 znaka
-  lcd.print(" C"); // 3 znaka
+  lcd.print(" ");
+  lcd.write(byte(0));
+  lcd.print("C"); // 3 znaka
   lcd.setCursor(0, 1);
   lcd.print("Temp: "); //6 znakova
   lcd.print(temperature); // 3 znaka
-  lcd.print(" C"); // 3 znaka
+  lcd.print(" ");
+  lcd.write(byte(0));
+  lcd.print("C"); // 3 znaka
   myPID.SetMode(AUTOMATIC); 
 }
 
