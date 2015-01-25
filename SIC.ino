@@ -38,36 +38,54 @@ volatile unsigned int error;
 int temperature;
 int pwmrate;
 
+int buttonState;             // the current reading from the input pin
+int lastButtonState = LOW;   // the previous reading from the input pin
+
+// the following variables are long's because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+long lastDebounceTime = 0;  // the last time the output pin was toggled
+long debounceDelay = 40;    // the debounce time; increase if the output flickers
+
 //Define Variables we'll be connecting to
 double Setpoint, Input, Output;
-PID myPID(&Input, &Output, &Setpoint,1,0,0, DIRECT);
+PID myPID(&Input, &Output, &Setpoint,0.5,0,0, DIRECT);
 
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 byte stupanj[8] = {
+ B00110,
+ B01001,
+ B01001,
+ B00110,
  B00000,
- B00110,
- B01001,
- B01001,
- B00110,
  B00000,
  B00000,
  B00000
 };
-
+byte tocka[8] = {
+ B11111,
+ B11111,
+ B11111,
+ B11111,
+ B11111,
+ B11111,
+ B11111,
+ B11111
+};
 void setup() {
   pinMode(ptcPin, INPUT);
   pinMode(heater, OUTPUT);  
   pinMode(encoder0PinA, INPUT); 
-  digitalWrite(encoder0PinA, HIGH);       // turn on pullup resistor
+  //digitalWrite(encoder0PinA, HIGH);       // turn on pullup resistor
   pinMode(encoder0PinB, INPUT); 
-  digitalWrite(encoder0PinB, HIGH);       // turn on pullup resistor
+  //digitalWrite(encoder0PinB, HIGH);       // turn on pullup resistor
 
   attachInterrupt(0, doEncoder, CHANGE);  // encoder pin on interrupt 0 - pin 2
   
   // set up the LCD's number of columns and rows: 
   lcd.begin(16, 2);
   lcd.createChar(0, stupanj);
+  lcd.createChar(1, tocka);
   // Print a message to the LCD.
   lcd.print("hello, world!");
   delay (1000);
@@ -88,12 +106,53 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(button) == LOW){
+  /* Debouncig and detecting button press*/
+  /*if (digitalRead(button) == LOW){
     delay (50);
     if (digitalRead(button) == LOW){
       heaterState = !heaterState;}
-  }
+  }*/
   
+  
+  // read the state of the switch into a local variable:
+  int reading = digitalRead(button);
+
+  // check to see if you just pressed the button 
+  // (i.e. the input went from LOW to HIGH),  and you've waited 
+  // long enough since the last press to ignore any noise:  
+
+  // If the switch changed, due to noise or pressing:
+  if (reading != lastButtonState) {
+    // reset the debouncing timer
+    lastDebounceTime = millis();
+  } 
+  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // whatever the reading is at, it's been there for longer
+    // than the debounce delay, so take it as the actual current state:
+
+    // if the button state has changed:
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      // only toggle the LED if the new button state is HIGH
+      if (buttonState == LOW) {
+        heaterState = !heaterState;
+      }
+      if (!heaterState){
+        digitalWrite(heater, LOW);
+        lcd.setCursor(15, 1);
+        lcd.print(" ");
+        }
+      else {
+        analogWrite(heater, pwmrate);
+        lcd.setCursor(15, 1);
+        lcd.write(byte(1)); 
+        }
+      
+    }
+  }
+  lastButtonState = reading;
   // set the cursor to column 10, line 0
   // (note: line 1 is the second row, since counting begins with 0):
   lcd.setCursor(10, 0);
@@ -107,18 +166,10 @@ void loop() {
   Input = temperature;
   myPID.Compute();
   pwmrate = Output;
-  if (heaterState){
-    digitalWrite(heater, LOW);}
-   else {
-    analogWrite(heater, pwmrate);
-   }
-   delay (100);
+  if (heaterState == 1){
+     analogWrite(heater, pwmrate);}
+  delay (50);
 }
-
-
-
-
-
 
 /* read a rotary encoder with interrupts
    Encoder hooked up with common to GROUND,
@@ -139,11 +190,11 @@ void doEncoder() {
    noInterrupts();
   if (digitalRead(encoder0PinA) == digitalRead(encoder0PinB)) {
     
-    //if (encoder0Pos < 450){
-    encoder0Pos++;//}
+    if (encoder0Pos < 450){
+    encoder0Pos++;}
   } else {
-    //if (encoder0Pos > 200){
-    encoder0Pos--;//}
+    if (encoder0Pos > 200){
+    encoder0Pos--;}
   }
   interrupts();
 }
