@@ -43,7 +43,9 @@ PWM output on PB3 (OCR2, compare output from Timer2)
 #define Kd 6		//factor in d part of controller
 volatile uint16_t encPos = 320;
 volatile uint16_t update_lcd = 1;
-volatile uint8_t button_down;static inline void debounce(void);
+volatile uint8_t button_down;
+static inline void debounce(void);
+
 volatile uint16_t iState =0;
 volatile uint16_t dState =0;
 
@@ -74,7 +76,6 @@ uint16_t UpdatePID(int16_t error, uint16_t position)
 
 	return result;
 }
-
 
 int main(void)
 {
@@ -140,13 +141,13 @@ int main(void)
   itoa(encPos, tempbuff,10);
   lcd_puts(tempbuff);
   lcd_puts(" ");
-  lcd_data(0); //°
+  lcd_data(0); //Â°
   lcd_puts("C");
   lcd_gotoxy(0,1);
   lcd_puts("Temp: "); //6 znakova
   lcd_gotoxy(9,1);
   lcd_puts(" ");
-  lcd_data(0); //°
+  lcd_data(0); //Â°
   lcd_puts("C");
 
   while(1)                      /* run continuously */
@@ -235,4 +236,4 @@ static inline void debounce(void)
 		// Reset counter
 		count = 0;
 	}
-}
+}
