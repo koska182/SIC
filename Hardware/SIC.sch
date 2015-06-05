@@ -16192,7 +16192,7 @@ body 3.9 mm/JEDEC MS-012AA</description>
 <part name="R10" library="resistor" deviceset="R-EU_" device="0207/10" value="120k"/>
 <part name="R11" library="resistor" deviceset="R-EU_" device="0207/10" value="10k"/>
 <part name="R12" library="resistor" deviceset="R-EU_" device="0207/10" value="1k"/>
-<part name="Q2" library="special" deviceset="XTAL/S" device="" value="16MHz"/>
+<part name="Q2" library="special" deviceset="XTAL/S" device="" value="8MHz"/>
 <part name="U$1" library="SparkFun" deviceset="5V" device=""/>
 <part name="U$2" library="SparkFun" deviceset="5V" device=""/>
 <part name="U$3" library="SparkFun" deviceset="5V" device=""/>
