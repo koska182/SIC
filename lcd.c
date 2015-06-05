@@ -28,8 +28,6 @@
 #include <util/delay.h>
 #include "lcd.h"
 
-
-
 /* 
 ** constants/macros 
 */
